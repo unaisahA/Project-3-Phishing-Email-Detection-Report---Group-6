@@ -55,3 +55,29 @@ if __name__ == "__main__":
         print(f"Error: The file '{input_file}' does not exist. Please check the path.")
         sys.exit(1)
     extract_keywords(input_file, output_file)
+
+
+
+def check_keywords(subject, body):
+    suspicious_words = ["urgent", "verify", "password", "account", "rolex","money", "love", "cnn", "replica", "bank"]
+    score = 0
+    
+    # Lowercase everything
+    subject = subject.lower()
+    body_words = body.lower().split()
+    
+    # --- Subject line scoring ---
+    for word in suspicious_words:
+        if word in subject.split():
+            score += 3   # higher risk if found in subject
+    
+    # --- Body scoring ---
+    for i, word in enumerate(body_words):
+        if word in suspicious_words:
+            if i < 20:  
+                score += 2   # found early in body
+            else:
+                score += 1   # found later in body
+    
+    return score
+
