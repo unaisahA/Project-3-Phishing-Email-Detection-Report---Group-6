@@ -1,0 +1,59 @@
+import pandas as pd
+import re
+from collections import Counter
+
+
+# --- Helpers from pattern_miner.py ---
+def get_domain(email):
+    return email.split('@')[-1]
+
+
+def get_tokens(domain):
+    return re.split(r'[.-]', domain)
+
+
+# --- Borrowed grading system (adapted for tokens) ---
+def grade_email_by_tokens(tokens, suspicious_tokens):
+    score = 0
+    for token in tokens:
+        if token in suspicious_tokens:
+            score += 1   # give 1 point per suspicious token
+
+    # Cap at 5, same as keyword grading system
+    score = min(score, 5)
+
+    if score >= 5:
+        risk = "HIGH"
+    elif score >= 3:
+        risk = "MEDIUM"
+    else:
+        risk = "LOW"
+    return score, risk
+
+
+# --- Main ---
+df = pd.read_excel("suspicious_senders_with_reasons.xlsx")
+
+df["domain"] = df["Column1"].apply(get_domain)
+df["tokens"] = df["domain"].apply(get_tokens)
+
+# Flatten tokens
+all_tokens = []
+for tokens in df["tokens"]:
+    for token in tokens:
+        all_tokens.append(token)
+
+# Find top 20 suspicious tokens
+token_counts = Counter(all_tokens)
+top_tokens = [token for token, _ in token_counts.most_common(20)]
+
+print("Most common suspicious tokens in addresses:")
+print(token_counts.most_common(20))
+
+# Apply grading system using the top tokens
+df["risk_score"], df["risk_level"] = zip(*df["tokens"].apply(
+    lambda t: grade_email_by_tokens(t, top_tokens)
+))
+
+print("\nEmails with risk scores:")
+print(df[["Column1", "domain", "risk_score", "risk_level"]])
