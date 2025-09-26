@@ -36,10 +36,13 @@ if __name__ == "__main__":
     print("Enter the email body:")
     body = input()
     score = check_keywords(subject, body)
+    #cap score at 5 (highest score)
+    score = min(score, 5)
     print(f"Risk score: {score}")
-    if score >= 8:
+    if score >= 5:
         print("Risk Level: HIGH")
-    elif score >= 4:
+    elif score >= 3:
         print("Risk Level: MEDIUM")
     else:
         print("Risk Level: LOW")
+
