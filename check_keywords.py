@@ -3,7 +3,7 @@ import sys
 
 def check_keywords(subject, body):
     suspicious_words = ["urgent", "verify", "password", "account",
-                        "rolex", "money", "love", "cnn", "replica", "bank"]
+                        "rolex", "money", "love", "cnn", "replica", "bank", "debt", "casino"]
     score = 0
 
     import string
@@ -45,4 +45,5 @@ if __name__ == "__main__":
         print("Risk Level: MEDIUM")
     else:
         print("Risk Level: LOW")
+
 
