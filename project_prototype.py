@@ -1,45 +1,47 @@
-import pandas as pd
-import re
-from collections import Counter
-import difflib
-import string
+import pandas as pd                # For handling Excel data (which is the "suspicious_sender_with_reasons.xlsx")
+import re                          # Use to split domain into tokens
+from collections import Counter    # To count frequency of domain tokens
+import difflib                     # For finding similar matching data
+import string                      # For removing punctuation in subject and body text
 
 # --- Get top suspicious tokens from Excel ---
 
-
+# Extracts the domain part of an email address after @
 def get_domain(email):
     return email.split('@')[-1]
 
-
+# Splitting the domain into smaller tokens using '.' and '-'
+# Example: "mail-example.com" will be split into "mail", "example" and "com"
 def get_tokens(domain):
     return re.split(r'[.-]', domain)
 
 
-# Get top 20 most common tokens of suspicious domain
+# Get the top 20 most common tokens of the suspicious domain
 try:
-    df_tokens = pd.read_excel("suspicious_senders_with_reasons.xlsx")
-    df_tokens["domain"] = df_tokens["Column1"].apply(get_domain)
-    df_tokens["tokens"] = df_tokens["domain"].apply(get_tokens)
-    all_tokens = []
+    df_tokens = pd.read_excel("suspicious_senders_with_reasons.xlsx") # Read suspicious senders data from Excel
+    df_tokens["domain"] = df_tokens["Column1"].apply(get_domain)      # Adding new column called domain
+    df_tokens["tokens"] = df_tokens["domain"].apply(get_tokens)       # Split each domain into smaller tokens into tokens column
+    all_tokens = []                                                   # Collect all tokens in one list
     for tokens in df_tokens["tokens"]:
         for token in tokens:
             all_tokens.append(token)
-    token_counts = Counter(all_tokens)
-    top_tokens = [token for token, _ in token_counts.most_common(20)]
+    token_counts = Counter(all_tokens)                                # Count the frequency of the token accross all suspicious domains
+    top_tokens = [token for token, _ in token_counts.most_common(20)] # Get top 20 most common tokens
 except Exception:
     top_tokens = []
 
+# A list of safe/trusted domains
 TRUSTED_DOMAINS = [
     "gmail.com", "outlook.com", "yahoo.com", "hotmail.com", "mail.com", "edu.com", "gov.sg", "edu.sg"
 ]
 
 
-# check for similar but fake email domains
-
-
+# check for similar but fake email domains in comparison to trusted domains
 def is_typosquatting(domain, trusted_domains, threshold=0.7):
+    # Find the closest match to the domain from trusted domains using similarity cutoff
     matches = difflib.get_close_matches(
         domain, trusted_domains, n=1, cutoff=threshold)
+    # Return True/False and the closed trusted domain if found
     return len(matches) > 0, matches[0] if matches else None
 
 
@@ -56,17 +58,22 @@ def domain_risk_score_with_reason(email):
         reasons.append("Trusted domain")
     else:
         score = 1
-        reasons.append("Not a trusted domain")
-        is_suspicious, closest = is_typosquatting(domain, TRUSTED_DOMAINS)
+        reasons.append("Not a trusted domain")                                # If it is not from a trusted domain
+        is_suspicious, closest = is_typosquatting(domain, TRUSTED_DOMAINS)    # check if it's risky from either how similar the domain is to a trusted domain
         if is_suspicious and domain != closest:
             score += 2
             reasons.append(f"Typosquatting: similar to {closest}")
-        suspicious_tokens = [token for token in tokens if token in top_tokens]
+       
+        # Check if any tokens match known suspicious tokens
+        suspicious_tokens = [token for token in tokens if token in top_tokens] # Or if it is included in the top 20 tokens listed
         if suspicious_tokens:
             score += len(suspicious_tokens)
             reasons.append(
                 f"Suspicious tokens: {', '.join(suspicious_tokens)}")
+        
+        # Make the maximum score be 5
         score = min(score, 5)
+    # Return the score with reasoning
     return score, "; ".join(reasons)
 
 
@@ -79,7 +86,7 @@ def text_risk_score_with_reason(subject, body):
     score = 0
     reasons = []
 
-    # remove punctuation and lowercase all letters
+    # cleaning by removing punctuation and lowercase all letters
     subject_clean = subject.lower().translate(
         str.maketrans('', '', string.punctuation))
     body_clean = body.lower().translate(str.maketrans('', '', string.punctuation))
@@ -129,3 +136,4 @@ elif average_score >= 2:
     print("Risk Level: MEDIUM")
 else:
     print("Risk Level: LOW")
+
