@@ -3,6 +3,7 @@ import re                          # Use to split domain into tokens
 from collections import Counter    # To count frequency of domain tokens
 import difflib                     # For finding similar matching data
 import string                      # For removing punctuation in subject and body text
+from link_analyzer import analyze_url_domains, link_risk_score
 
 # --- Get top suspicious tokens from Excel ---
 
@@ -81,8 +82,12 @@ def domain_risk_score_with_reason(email):
 
 
 def text_risk_score_with_reason(subject, body):
-    suspicious_words = ["urgent", "verify", "password", "account",
-                        "rolex", "money", "love", "cnn", "replica", "bank", "debt", "casino"]
+    suspicious_words = ["urgent", "verify", "password", "account", "access", "attention", "click", "high", "quality",
+                        "rolex", "money", "love", "cnn", "replica", "bank", "debt", "casino", "discount", "reliable", "only",
+                        "loan", "save", "visit", "site", "well-paid", "enjoy", "price", "sell", "purchase", "offer", "form",
+                        "100%", "safe", "medication", "license", "guarantee", "copies", "now", "download", "install", "refund",
+                        "free", "eliminate", "legal", "unsecure", "club", "cheap", "original", "buy", "unsecure", "drug",
+                        "confidential", "reactivation", "update", "payment", "secured"]
     score = 0
     reasons = []
 
@@ -116,24 +121,73 @@ def text_risk_score_with_reason(subject, body):
     return score, "; ".join(reasons)
 
 
-# --- User input ---
-email = input("Enter email address: ")
-subject = input("Enter email subject: ")
-body = input("Enter email body: ")
+# --- Combine dataset-based and manual trusted link setup ---
 
-domain_score, domain_reason = domain_risk_score_with_reason(email)
-text_score, text_reason = text_risk_score_with_reason(subject, body)
-average_score = (domain_score + text_score) / 2
+try:
+    # Load dataset-based top trusted/untrusted/fake links
+    TRUSTED_LINKS_DS, UNTRUSTED_LINKS_DS, FAKE_LINKS_DS = analyze_url_domains(
+        "CEAS_08.csv")
 
-print(f"Domain risk score: {domain_score}")
-print(f"Domain reason: {domain_reason}")
-print(f"Text risk score: {text_score}")
-print(f"Text reason: {text_reason}")
-print(f"Average risk score: {average_score:.2f}")
-if average_score >= 4:
-    print("Risk Level: HIGH")
-elif average_score >= 2:
-    print("Risk Level: MEDIUM")
-else:
-    print("Risk Level: LOW")
+    # Add manual trusted domains (able to edit)
+    MANUAL_TRUSTED_LINKS = [
+        "google.com", "youtube.com", "microsoft.com", "linkedin.com",
+        "facebook.com", "gmail.com", "apple.com", "amazon.com"
+    ]
+
+    # Merge dataset and manual lists (remove duplicates)
+    TRUSTED_LINKS = list(set(TRUSTED_LINKS_DS + MANUAL_TRUSTED_LINKS))
+    UNTRUSTED_LINKS = UNTRUSTED_LINKS_DS
+
+    # Detect fake/similar domains based on the manual trusted list
+    FAKE_LINKS = FAKE_LINKS_DS.copy()
+    for domain in UNTRUSTED_LINKS:
+        match = difflib.get_close_matches(
+            domain, MANUAL_TRUSTED_LINKS, cutoff=0.75)
+        if match:
+            FAKE_LINKS.append(domain)
+
+    # Remove duplicates & keep top 20
+    FAKE_LINKS = list(set(FAKE_LINKS))[:20]
+
+except Exception as e:
+
+    '''Purpose: if anything in the try block failed (reading the CSV, pandas errors, 
+    analyze_url_domains raising, etc.), fall back to safe default lists so the rest of 
+    the script can still run.'''
+
+    print(f"Error loading CSV: {e}")
+    TRUSTED_LINKS = ["google.com", "youtube.com",
+                     "microsoft.com", "linkedin.com"]
+    UNTRUSTED_LINKS = ["milddear.com", "flapprice.com", "fetessteersit.com"]
+    FAKE_LINKS = ["goggle.com", "youtubee.com", "micros0ft.com"]
+
+
+if __name__ == '__main__':
+    # --- User input for email analysis ---
+    email = input("Enter email address: ")
+    subject = input("Enter email subject: ")
+    body = input("Enter email body: ")
+
+    domain_score, domain_reason = domain_risk_score_with_reason(email)
+    text_score, text_reason = text_risk_score_with_reason(subject, body)
+    link_score, link_reason = link_risk_score(
+        body, TRUSTED_LINKS, UNTRUSTED_LINKS, FAKE_LINKS)
+
+    final_score = (domain_score + text_score + link_score) / 3
+
+    print("\n--- RESULTS ---")
+    print(f"Domain risk score: {domain_score}")
+    print(f"Domain reason: {domain_reason}")
+    print(f"Text risk score: {text_score}")
+    print(f"Text reason: {text_reason}")
+    print(f"Link risk score: {link_score}")
+    print(f"Link reason: {link_reason}")
+    print(f"Final risk score: {final_score:.2f}")
+
+    if final_score >= 4:
+        print("Risk Level: HIGH")
+    elif final_score >= 2:
+        print("Risk Level: MEDIUM")
+    else:
+        print("Risk Level: LOW")
 
