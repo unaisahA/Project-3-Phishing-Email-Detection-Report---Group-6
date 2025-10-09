@@ -18,7 +18,7 @@ def load_link_lists():
         st.success("✅ CEAS_08.csv loaded successfully.")
         return TRUSTED_LINKS, UNTRUSTED_LINKS, FAKE_LINKS
     except Exception as e:
-        st.error(f"❌ Error loading CEAS_08.csv: {e}")
+        st.warning(f"Could not load CEAS_08.csv ({e}). Using default lists.")
         TRUSTED_LINKS = ["google.com", "youtube.com", "microsoft.com", "linkedin.com", "paypal.com"]
         UNTRUSTED_LINKS = ["flapprice.com", "milddear.com", "fetessteersit.com"]
         FAKE_LINKS = ["goggle.com", "micros0ft.com", "secure-paypal-login.com", "paypa1.com"]
