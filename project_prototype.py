@@ -13,8 +13,7 @@ def get_domain(email):
     Args:
         email (str): The full email address, e.g. "user@example.com".
     Returns:
-        str: The domain portion after '@', e.g. "example.com".
-    """
+        str: The domain portion after '@', e.g. "example.com"."""
     return email.split('@')[-1]
 
 # Splitting the domain into smaller tokens using '.' and '-'
@@ -44,6 +43,15 @@ TRUSTED_DOMAINS = [
 
 
 # check for similar but fake email domains in comparison to trusted domains
+ """ Check if a domain name is visually similar (typosquatting) to any trusted domain.
+       Args:
+        domain (str): The domain name to check.
+        trusted_domains (list[str]): List of legitimate trusted domains.
+        threshold (float): Similarity cutoff between 0 and 1 (higher = stricter).
+      Returns:
+        tuple[bool, Optional[str]]: 
+            - True if similar domain found, otherwise False.
+            - Closest matching trusted domain, if any. """
 def is_typosquatting(domain, trusted_domains, threshold=0.7):
     # Find the closest match to the domain from trusted domains using similarity cutoff
     matches = difflib.get_close_matches(
@@ -94,7 +102,7 @@ def domain_risk_score_with_reason(email):
 
 
 # Scanning the email subject and body
-  """Analyze email subject and body text for suspicious or scam-like language.
+  """Analyse email subject and body text for suspicious or scam-like language.
     Args:
         subject (str): Email subject line.
         body (str): Email message body.
@@ -113,6 +121,26 @@ def text_risk_score_with_reason(subject, body):
     reasons = []
 
     # cleaning by removing punctuation and lowercase all letters
+"""Process and analyze the email's subject and body text to identify suspicious or scam-related keywords.
+      Steps:
+        1. Clean the text by converting all letters to lowercase and removing punctuation.
+        2. Split the text into individual words for easier keyword matching.
+        3. Check the subject and body for the presence of known suspicious words.
+        4. Increase the risk score based on:
+            - Frequency of suspicious words in the subject (each occurrence adds 3 points).
+            - Position of suspicious words in the body:
+                * +2 points if found early (within the first 20 words),
+                * +1 point otherwise.
+        5. Cap the final text-based risk score at a maximum of 5.
+        6. Collect readable explanations listing which suspicious words were detected.
+      Purpose:
+        This part of the function quantifies how suspicious the email's language is,
+        since phishing messages often use attention-grabbing or urgent words.
+       Returns:
+        tuple[int, str]:
+            - The computed text risk score (0–5).
+            - A string describing which suspicious words were found in the subject or body. """
+
     subject_clean = subject.lower().translate(
         str.maketrans('', '', string.punctuation))
     body_clean = body.lower().translate(str.maketrans('', '', string.punctuation))
@@ -211,5 +239,6 @@ if __name__ == '__main__':
         print("Risk Level: MEDIUM")
     else:
         print("Risk Level: LOW")
+
 
 
