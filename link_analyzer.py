@@ -1,3 +1,42 @@
+"""
+link_analyzer.py
+
+This module provides functions for extracting and evaluating URLs or domains from email bodies to assess phishing risk.
+
+Main Features:
+---------------
+1. Extract URLs and bare domains from email text using regular expressions.
+2. Normalize URLs into clean domain names (e.g., remove 'https://' and 'www.').
+3. Analyze a labeled email dataset (CSV) to identify:
+   - Top 20 trusted domains (legitimate links)
+   - Top 20 untrusted domains (phishing or spam)
+   - Fake/similar domains (typosquatting or imitation)
+4. Compute a link-based risk score for a given email body.
+
+Functions:
+-----------
+- extract_urls(text): 
+    Extract all URLs and domains from a given text string.
+- get_link_domain(url): 
+    Normalize and extract the main domain from a URL.
+- analyze_url_domains(csv_path): 
+    Analyze a dataset to generate lists of trusted, untrusted, and fake domains.
+- link_risk_score(body, trusted_links, untrusted_links, fake_links): 
+    Compute a risk score (0–5) for links found in an email body based on their trustworthiness.
+
+Usage:
+-------
+Used by the main phishing detection script to assess link-level risk 
+as part of the total email risk score (alongside domain and text risk).
+
+Dependencies:
+-------------
+- pandas: for dataset handling
+- re: for regular expressions and text cleaning
+- difflib: for detecting typosquatting and domain similarity
+- collections.Counter: for counting frequency of domains 
+"""
+
 import pandas as pd
 import re
 import difflib
@@ -135,3 +174,4 @@ def link_risk_score(body, trusted_links, untrusted_links, fake_links):
 
     score = min(score, 5)
     return score, "; ".join(reasons)
+
