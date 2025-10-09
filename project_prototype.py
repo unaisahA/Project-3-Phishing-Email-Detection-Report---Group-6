@@ -7,8 +7,14 @@ from link_analyzer import analyze_url_domains, link_risk_score
 
 # --- Get top suspicious tokens from Excel ---
 
-# Extracts the domain part of an email address after @
+
 def get_domain(email):
+      """ Extract the domain part of an email address.
+    Args:
+        email (str): The full email address, e.g. "user@example.com".
+    Returns:
+        str: The domain portion after '@', e.g. "example.com".
+    """
     return email.split('@')[-1]
 
 # Splitting the domain into smaller tokens using '.' and '-'
@@ -48,7 +54,16 @@ def is_typosquatting(domain, trusted_domains, threshold=0.7):
 
 # scoring the email domain
 
-
+"""Assign a risk score to an email based on its sender domain.
+    Steps:
+    - Check if domain is in trusted list.
+    - Check for typosquatting (fake but similar domains).
+    - Check for presence of suspicious tokens.
+    Args:
+        email (str): Full email address of sender.
+    Returns:
+        tuple[int, str]: 
+            Risk score (0–5) and string describing reasons for the score."""
 def domain_risk_score_with_reason(email):
     domain = get_domain(email)
     tokens = get_tokens(domain)
@@ -79,7 +94,13 @@ def domain_risk_score_with_reason(email):
 
 
 # Scanning the email subject and body
-
+  """Analyze email subject and body text for suspicious or scam-like language.
+    Args:
+        subject (str): Email subject line.
+        body (str): Email message body.
+    Returns:
+        tuple[int, str]: 
+            Risk score (0–5) and explanation of which words triggered risk."""
 
 def text_risk_score_with_reason(subject, body):
     suspicious_words = ["urgent", "verify", "password", "account", "access", "attention", "click", "high", "quality",
@@ -190,4 +211,5 @@ if __name__ == '__main__':
         print("Risk Level: MEDIUM")
     else:
         print("Risk Level: LOW")
+
 
