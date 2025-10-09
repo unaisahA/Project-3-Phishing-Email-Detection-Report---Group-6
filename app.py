@@ -1,21 +1,29 @@
 import streamlit as st
+import os
 from link_analyzer import analyze_url_domains, link_risk_score
 # import your two scoring functions from your main file:
 from project_prototype import domain_risk_score_with_reason, text_risk_score_with_reason
 
-st.set_page_config(page_title="Phishing Detector", page_icon="📧", layout="centered")
+# --- ALWAYS resolve path relative to this file ---
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+CSV_PATH = os.path.join(BASE_DIR, "CEAS_08.csv")
+
 
 @st.cache_data(show_spinner=False)
 def load_link_lists():
-    # Try dataset; fall back to small hardcoded lists if CSV missing
     try:
-        trusted, untrusted, fake = analyze_url_domains("CEAS_08.csv")
+        TRUSTED_LINKS, UNTRUSTED_LINKS, FAKE_LINKS = analyze_url_domains(
+            CSV_PATH)
+
+        st.success("✅ CEAS_08.csv loaded successfully.")
+        return TRUSTED_LINKS, UNTRUSTED_LINKS, FAKE_LINKS
     except Exception as e:
-        st.warning(f"Could not load CEAS_08.csv ({e}). Using default lists.")
-        trusted = ["google.com", "youtube.com", "microsoft.com", "linkedin.com", "paypal.com"]
-        untrusted = ["flapprice.com", "milddear.com", "fetessteersit.com"]
-        fake = ["goggle.com", "micros0ft.com", "secure-paypal-login.com", "paypa1.com"]
-    return trusted, untrusted, fake
+        st.error(f"❌ Error loading CEAS_08.csv: {e}")
+        TRUSTED_LINKS = ["google.com", "youtube.com", "microsoft.com", "linkedin.com", "paypal.com"]
+        UNTRUSTED_LINKS = ["flapprice.com", "milddear.com", "fetessteersit.com"]
+        FAKE_LINKS = ["goggle.com", "micros0ft.com", "secure-paypal-login.com", "paypa1.com"]
+        return TRUSTED_LINKS, UNTRUSTED_LINKS, FAKE_LINKS
+
 
 TRUSTED_LINKS, UNTRUSTED_LINKS, FAKE_LINKS = load_link_lists()
 
