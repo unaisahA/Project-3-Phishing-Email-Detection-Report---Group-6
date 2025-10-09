@@ -14,8 +14,6 @@ def load_link_lists():
     try:
         TRUSTED_LINKS, UNTRUSTED_LINKS, FAKE_LINKS = analyze_url_domains(
             CSV_PATH)
-
-        st.success("✅ CEAS_08.csv loaded successfully.")
         return TRUSTED_LINKS, UNTRUSTED_LINKS, FAKE_LINKS
     except Exception as e:
         st.warning(f"Could not load CEAS_08.csv ({e}). Using default lists.")
