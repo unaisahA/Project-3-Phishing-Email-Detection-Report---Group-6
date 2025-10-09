@@ -1,7 +1,7 @@
 import streamlit as st
 from link_analyzer import analyze_url_domains, link_risk_score
 # import your two scoring functions from your main file:
-from Final import domain_risk_score_with_reason, text_risk_score_with_reason
+from project_prototype import domain_risk_score_with_reason, text_risk_score_with_reason
 
 st.set_page_config(page_title="Phishing Detector", page_icon="📧", layout="centered")
 
