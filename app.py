@@ -1,4 +1,3 @@
-pip install streamlit
 import streamlit as st
 from link_analyzer import analyze_url_domains, link_risk_score
 # import your two scoring functions from your main file:
@@ -58,5 +57,7 @@ if submitted:
             st.markdown(f"**Links:** {l_reason or '—'}")
 
 st.divider()
-""" To run the website enter -> (python -m streamlit run (your folder path)) in your terminal then click enter. The website should auto open,
-    you can continue to test there """
+""" To run the website, 
+    1) pip install streamllit 
+    2) Type -> (python -m streamlit run (your folder path)) in your terminal then click enter. The website should auto open,
+    you can continue to test there. """
