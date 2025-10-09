@@ -13,7 +13,8 @@ def get_domain(email):
     Args:
         email (str): The full email address, e.g. "user@example.com".
     Returns:
-        str: The domain portion after '@', e.g. "example.com"."""
+        str: The domain portion after '@', e.g. "example.com".
+    """
     return email.split('@')[-1]
 
 # Splitting the domain into smaller tokens using '.' and '-'
@@ -43,7 +44,8 @@ TRUSTED_DOMAINS = [
 
 
 # check for similar but fake email domains in comparison to trusted domains
- """ Check if a domain name is visually similar (typosquatting) to any trusted domain.
+def is_typosquatting(domain, trusted_domains, threshold=0.7):
+      """Check if a domain name is visually similar (typosquatting) to any trusted domain.
        Args:
         domain (str): The domain name to check.
         trusted_domains (list[str]): List of legitimate trusted domains.
@@ -51,8 +53,8 @@ TRUSTED_DOMAINS = [
       Returns:
         tuple[bool, Optional[str]]: 
             - True if similar domain found, otherwise False.
-            - Closest matching trusted domain, if any. """
-def is_typosquatting(domain, trusted_domains, threshold=0.7):
+            - Closest matching trusted domain, if any.
+    """
     # Find the closest match to the domain from trusted domains using similarity cutoff
     matches = difflib.get_close_matches(
         domain, trusted_domains, n=1, cutoff=threshold)
@@ -102,7 +104,7 @@ def domain_risk_score_with_reason(email):
 
 
 # Scanning the email subject and body
-  """Analyse email subject and body text for suspicious or scam-like language.
+"""Analyse email subject and body text for suspicious or scam-like language.
     Args:
         subject (str): Email subject line.
         body (str): Email message body.
@@ -239,6 +241,7 @@ if __name__ == '__main__':
         print("Risk Level: MEDIUM")
     else:
         print("Risk Level: LOW")
+
 
 
 
