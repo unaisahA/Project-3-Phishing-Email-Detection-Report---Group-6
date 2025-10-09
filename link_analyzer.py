@@ -43,8 +43,17 @@ import difflib
 from collections import Counter
 
 # Precompile commonly used regular expressions for performance
+# Match full URLs that start with http://, https://, or www.
+# Example matches: https://example.com, www.google.com
 URL_PATTERN = re.compile(r'(https?://[^\s)]+|www\.[^\s)]+)')
+
+# Match bare domains like example.com
+# using (?<!@) to ensure the match isn't email addresses that include '@'
+# Example matches: example.com, abc.co.uk
 BARE_DOMAIN_PATTERN = re.compile(r'(?<!@)\b(?:[A-Za-z0-9-]+\.)+[A-Za-z]{2,}\b')
+
+# Match and remove trailing punctuation marks like .,;:!)
+# Used to clean URLs that end with punctuation
 TRAILING_PUNCT_RE = re.compile(r'[\.,;:!\)]+$')
 
 
@@ -52,7 +61,9 @@ def extract_urls(text):
     """Extracts all URLs and bare domains from text body, preserving order and avoiding duplicates.
 
     Uses precompiled regexes and lightweight post-processing. Returns a list of strings.
+
     """
+    # if pd.isna ensures that if text is a missing value from pandas, it return empty list
     if pd.isna(text):
         return []
     s = str(text)
@@ -63,6 +74,9 @@ def extract_urls(text):
     # find bare domains as a fallback
     bare_matches = [m.group(0) for m in BARE_DOMAIN_PATTERN.finditer(s)]
 
+    # Use a set to track unique URLs/domains
+    # combine urls and bare domain while removing trailing punctuation marks
+    # Add the result of the url if it is not in the list yet
     seen = set()
     results = []
     for m in matches + bare_matches:
@@ -82,6 +96,7 @@ def get_link_domain(url):
     # Remove protocol and www
     url = re.sub(r'^https?://', '', url, flags=re.IGNORECASE)
     url = re.sub(r'^www\.', '', url, flags=re.IGNORECASE)
+    # Take only the part before the first '/' and convert to lowercase, returning only the domain like: example.com
     domain = url.split('/')[0].lower()
     return domain
 
@@ -174,4 +189,5 @@ def link_risk_score(body, trusted_links, untrusted_links, fake_links):
 
     score = min(score, 5)
     return score, "; ".join(reasons)
+
 
