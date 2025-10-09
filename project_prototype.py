@@ -9,7 +9,7 @@ from link_analyzer import analyze_url_domains, link_risk_score
 
 
 def get_domain(email):
-      """ Extract the domain part of an email address.
+    """ Extract the domain part of an email address.
     Args:
         email (str): The full email address, e.g. "user@example.com".
     Returns:
@@ -19,21 +19,29 @@ def get_domain(email):
 
 # Splitting the domain into smaller tokens using '.' and '-'
 # Example: "mail-example.com" will be split into "mail", "example" and "com"
+
+
 def get_tokens(domain):
     return re.split(r'[.-]', domain)
 
 
 # Get the top 20 most common tokens of the suspicious domain
 try:
-    df_tokens = pd.read_excel("suspicious_senders_with_reasons.xlsx") # Read suspicious senders data from Excel
-    df_tokens["domain"] = df_tokens["Column1"].apply(get_domain)      # Adding new column called domain
-    df_tokens["tokens"] = df_tokens["domain"].apply(get_tokens)       # Split each domain into smaller tokens into tokens column
-    all_tokens = []                                                   # Collect all tokens in one list
+    # Read suspicious senders data from Excel
+    df_tokens = pd.read_excel("suspicious_senders_with_reasons.xlsx")
+    df_tokens["domain"] = df_tokens["Column1"].apply(
+        get_domain)      # Adding new column called domain
+    # Split each domain into smaller tokens into tokens column
+    df_tokens["tokens"] = df_tokens["domain"].apply(get_tokens)
+    # Collect all tokens in one list
+    all_tokens = []
     for tokens in df_tokens["tokens"]:
         for token in tokens:
             all_tokens.append(token)
-    token_counts = Counter(all_tokens)                                # Count the frequency of the token accross all suspicious domains
-    top_tokens = [token for token, _ in token_counts.most_common(20)] # Get top 20 most common tokens
+    # Count the frequency of the token accross all suspicious domains
+    token_counts = Counter(all_tokens)
+    # Get top 20 most common tokens
+    top_tokens = [token for token, _ in token_counts.most_common(20)]
 except Exception:
     top_tokens = []
 
@@ -45,7 +53,7 @@ TRUSTED_DOMAINS = [
 
 # check for similar but fake email domains in comparison to trusted domains
 def is_typosquatting(domain, trusted_domains, threshold=0.7):
-      """Check if a domain name is visually similar (typosquatting) to any trusted domain.
+    """Check if a domain name is visually similar (typosquatting) to any trusted domain.
        Args:
         domain (str): The domain name to check.
         trusted_domains (list[str]): List of legitimate trusted domains.
@@ -74,6 +82,8 @@ def is_typosquatting(domain, trusted_domains, threshold=0.7):
     Returns:
         tuple[int, str]: 
             Risk score (0–5) and string describing reasons for the score."""
+
+
 def domain_risk_score_with_reason(email):
     domain = get_domain(email)
     tokens = get_tokens(domain)
@@ -84,19 +94,22 @@ def domain_risk_score_with_reason(email):
         reasons.append("Trusted domain")
     else:
         score = 1
-        reasons.append("Not a trusted domain")                                # If it is not from a trusted domain
-        is_suspicious, closest = is_typosquatting(domain, TRUSTED_DOMAINS)    # check if it's risky from either how similar the domain is to a trusted domain
+        # If it is not from a trusted domain
+        reasons.append("Not a trusted domain")
+        # check if it's risky from either how similar the domain is to a trusted domain
+        is_suspicious, closest = is_typosquatting(domain, TRUSTED_DOMAINS)
         if is_suspicious and domain != closest:
             score += 2
             reasons.append(f"Typosquatting: similar to {closest}")
-       
+
         # Check if any tokens match known suspicious tokens
-        suspicious_tokens = [token for token in tokens if token in top_tokens] # Or if it is included in the top 20 tokens listed
+        # Or if it is included in the top 20 tokens listed
+        suspicious_tokens = [token for token in tokens if token in top_tokens]
         if suspicious_tokens:
             score += len(suspicious_tokens)
             reasons.append(
                 f"Suspicious tokens: {', '.join(suspicious_tokens)}")
-        
+
         # Make the maximum score be 5
         score = min(score, 5)
     # Return the score with reasoning
@@ -110,7 +123,9 @@ def domain_risk_score_with_reason(email):
         body (str): Email message body.
     Returns:
         tuple[int, str]: 
-            Risk score (0–5) and explanation of which words triggered risk."""
+            Risk score (0–5) and explanation of which words triggered risk.
+"""
+
 
 def text_risk_score_with_reason(subject, body):
     suspicious_words = ["urgent", "verify", "password", "account", "access", "attention", "click", "high", "quality",
@@ -123,7 +138,7 @@ def text_risk_score_with_reason(subject, body):
     reasons = []
 
     # cleaning by removing punctuation and lowercase all letters
-"""Process and analyze the email's subject and body text to identify suspicious or scam-related keywords.
+    """Process and analyze the email's subject and body text to identify suspicious or scam-related keywords.
       Steps:
         1. Clean the text by converting all letters to lowercase and removing punctuation.
         2. Split the text into individual words for easier keyword matching.
@@ -141,7 +156,8 @@ def text_risk_score_with_reason(subject, body):
        Returns:
         tuple[int, str]:
             - The computed text risk score (0–5).
-            - A string describing which suspicious words were found in the subject or body. """
+            - A string describing which suspicious words were found in the subject or body. 
+    """
 
     subject_clean = subject.lower().translate(
         str.maketrans('', '', string.punctuation))
@@ -241,7 +257,3 @@ if __name__ == '__main__':
         print("Risk Level: MEDIUM")
     else:
         print("Risk Level: LOW")
-
-
-
-
