@@ -62,6 +62,9 @@ def check_keywords(subject, body):
     suspicious_words = ["urgent", "verify", "password", "account", "rolex","money", "love", "cnn", "replica", "bank"]
     score = 0
     
+    """In terminal, write like that -> PS C:\Users\unaisah\AppData\Local\Programs\Microsoft VS Code> & C:\Users\unaisah\AppData\Local\Programs\Python\Python313\python.exe "c:/Users/unaisah/OneDrive/Documents/OneDrive/Unaisah/SIT (University)/Programming Fundamentals/project 1/project.py" "c:/Users/unaisah/OneDrive/Documents/OneDrive/Unaisah/SIT (University)/Progr
+amming Fundamentals/project 1/emails.xlsx"  """
+
     # Lowercase everything
     subject = subject.lower()
     body_words = body.lower().split()
