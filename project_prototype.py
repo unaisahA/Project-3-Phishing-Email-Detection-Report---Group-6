@@ -5,7 +5,7 @@ import difflib                     # For finding similar matching data
 import string                      # For removing punctuation in subject and body text
 from link_analyzer import analyze_url_domains, link_risk_score
 
-# --- Get top suspicious tokens from Excel ---
+# Get top suspicious tokens from Excel
 
 
 def get_domain(email):
@@ -257,4 +257,5 @@ if __name__ == '__main__':
         print("Risk Level: MEDIUM")
     else:
         print("Risk Level: LOW")
+
 
