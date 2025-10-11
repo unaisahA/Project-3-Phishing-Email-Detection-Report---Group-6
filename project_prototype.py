@@ -192,14 +192,11 @@ def text_risk_score_with_reason(subject, body):
 
 try:
     # Load dataset-based top trusted/untrusted/fake links
-    TRUSTED_LINKS_DS, UNTRUSTED_LINKS_DS, FAKE_LINKS_DS = analyze_url_domains(
-        "CEAS_08.csv")
+    TRUSTED_LINKS_DS, UNTRUSTED_LINKS_DS, FAKE_LINKS_DS = analyze_url_domains("CEAS_08.csv")
 
     # Add manual trusted domains (so people are able to edit)
     MANUAL_TRUSTED_LINKS = [
-        "google.com", "youtube.com", "microsoft.com", "linkedin.com",
-        "facebook.com", "gmail.com", "apple.com", "amazon.com"
-    ]
+        "google.com", "youtube.com", "microsoft.com", "linkedin.com","facebook.com", "gmail.com", "apple.com", "amazon.com"]
 
     # Merge dataset and manual lists (remove duplicates)
     TRUSTED_LINKS = list(set(TRUSTED_LINKS_DS + MANUAL_TRUSTED_LINKS))
@@ -223,8 +220,7 @@ except Exception as e:
     the script can still run.'''
 
     print(f"Error loading CSV: {e}")
-    TRUSTED_LINKS = ["google.com", "youtube.com",
-                     "microsoft.com", "linkedin.com"]
+    TRUSTED_LINKS = ["google.com", "youtube.com", "microsoft.com", "linkedin.com"]
     UNTRUSTED_LINKS = ["milddear.com", "flapprice.com", "fetessteersit.com"]
     FAKE_LINKS = ["goggle.com", "youtubee.com", "micros0ft.com"]
 
@@ -257,5 +253,6 @@ if __name__ == '__main__':
         print("Risk Level: MEDIUM")
     else:
         print("Risk Level: LOW")
+
 
 
