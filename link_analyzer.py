@@ -42,18 +42,18 @@ import re
 import difflib
 from collections import Counter
 
-# Precompile commonly used regular expressions for performance
-# Match full URLs that start with http://, https://, or www.
-# Example matches: https://example.com, www.google.com
+# Precompile commonly used regular expressions for link
+# Match full URLs that start with either http://, https://, or www.
+# Example: https://example.com, www.google.com
 URL_PATTERN = re.compile(r'(https?://[^\s)]+|www\.[^\s)]+)')
 
 # Match bare domains like example.com
-# using (?<!@) to ensure the match isn't email addresses that include '@'
-# Example matches: example.com, abc.co.uk
+# using (?<!@) will ensure the match isn't an email addresses that include '@'
+# Example: example.com, abc.co.uk
 BARE_DOMAIN_PATTERN = re.compile(r'(?<!@)\b(?:[A-Za-z0-9-]+\.)+[A-Za-z]{2,}\b')
 
 # Match and remove trailing punctuation marks like .,;:!)
-# Used to clean URLs that end with punctuation
+# It is used to clean URLs that end with punctuation
 TRAILING_PUNCT_RE = re.compile(r'[\.,;:!\)]+$')
 
 
@@ -63,7 +63,7 @@ def extract_urls(text):
     Uses precompiled regexes and lightweight post-processing. Returns a list of strings.
 
     """
-    # if pd.isna ensures that if text is a missing value from pandas, it return empty list
+    # It ensures that if text is a missing value from pandas, it will return an empty list
     if pd.isna(text):
         return []
     s = str(text)
@@ -71,12 +71,11 @@ def extract_urls(text):
     # find protocol/www matches first
     matches = [m.group(0) for m in URL_PATTERN.finditer(s)]
 
-    # find bare domains as a fallback
     bare_matches = [m.group(0) for m in BARE_DOMAIN_PATTERN.finditer(s)]
 
     # Use a set to track unique URLs/domains
-    # combine urls and bare domain while removing trailing punctuation marks
-    # Add the result of the url if it is not in the list yet
+    # combine urls and bare domain + removing trailing punctuation marks
+    # Add giving back the result of the url if it is not in the list yet
     seen = set()
     results = []
     for m in matches + bare_matches:
@@ -110,10 +109,10 @@ def analyze_url_domains(csv_path):
     - fake/similar domains (untrusted but looks similar to trusted within the dataset)
 
     """
-    # Read only the columns needed for analysis (Clean Data)
+    # Read only the columns needed (Clean Data)
     df = pd.read_csv(csv_path, usecols=["label", "urls", "body"])
 
-    # Limit dataset size to improve speed (if uses the whole dataset, it tooks ~15s)
+    # Limit dataset size to improve speed (if uses the whole dataset, it tooks around ~15s to run, which is very long)
     # Example: only process first 4000 rows (takes ~5s for project_prototype to run the program)
     df = df.head(4000)
 
@@ -189,5 +188,6 @@ def link_risk_score(body, trusted_links, untrusted_links, fake_links):
 
     score = min(score, 5)
     return score, "; ".join(reasons)
+
 
 
