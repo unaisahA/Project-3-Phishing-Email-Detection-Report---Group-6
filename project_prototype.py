@@ -117,7 +117,7 @@ def domain_risk_score_with_reason(email):
 
 
 # Scanning the email subject and body
-"""Analyse email subject and body text for suspicious or scam-like language.
+"""This section analyse email subject and body text for suspicious or scam-like language.
     Args:
         subject (str): Email subject line.
         body (str): Email message body.
@@ -174,7 +174,7 @@ def text_risk_score_with_reason(subject, body):
             f"Suspicious words in subject: {', '.join(found_subject)}")
     found_body = [word for word in suspicious_words if word in body_words]
 
-    # rate score based on when the suspicious word appear
+    # rate score based on when the suspicious word appears
     for i, word in enumerate(body_words):
         if word in suspicious_words:
             if i < 20:
@@ -195,7 +195,7 @@ try:
     TRUSTED_LINKS_DS, UNTRUSTED_LINKS_DS, FAKE_LINKS_DS = analyze_url_domains(
         "CEAS_08.csv")
 
-    # Add manual trusted domains (able to edit)
+    # Add manual trusted domains (so people are able to edit)
     MANUAL_TRUSTED_LINKS = [
         "google.com", "youtube.com", "microsoft.com", "linkedin.com",
         "facebook.com", "gmail.com", "apple.com", "amazon.com"
@@ -230,7 +230,7 @@ except Exception as e:
 
 
 if __name__ == '__main__':
-    # --- User input for email analysis ---
+    # User input for email analysis
     email = input("Enter email address: ")
     subject = input("Enter email subject: ")
     body = input("Enter email body: ")
@@ -257,3 +257,4 @@ if __name__ == '__main__':
         print("Risk Level: MEDIUM")
     else:
         print("Risk Level: LOW")
+
